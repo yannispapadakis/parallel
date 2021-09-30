@@ -109,29 +109,26 @@ struct Graph* graph_read(const char *filename) {
 	fp = fopen(filename,"r");
 	char line[50];
 	char *token;
-	float weight = 0;
-	int dest, source, V = 0, counter = 1, edges = 0;
+	int dest, source, V = 0, edges = 0;
 	struct Graph* graph = NULL;
 
 	while (fgets(line, sizeof line, fp) != NULL ) {
 		token = strtok(line," ");
 
-		if(strcmp(token,"c") == 0 && counter == 2) {
-			while (V == 0)
+		if (strcmp(token, "p") == 0) {
+			while (V == 0) 
 				V = atoi(strtok(NULL, " "));
 			graph = createGraph(V);
-		} else if(strcmp(token,"a") == 0) {
-			token = strtok(NULL, " ");
-			source = atoi(token);
-			token = strtok(NULL, " ");
-			dest = atoi(token);
-			token = strtok(NULL, " ");
-			weight = atof(token);
-			edges++;
+		} else if (strcmp(token, "a") == 0 || strcmp(token, "e") == 0) {
+			source = atoi(strtok(NULL, " "));
+			dest = atoi(strtok(NULL, " "));
+/*			token = strtok(NULL, " ");
+			if (token != NULL)
+				weight = atof(token);
+*/			edges++;
 			addEdge(graph, source - 1, dest - 1);
 		}
-		counter++;
-		}
+	}
 
 	find_avg_degree(graph);
 	return graph;
