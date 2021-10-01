@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 struct AdjListNode {
 	int dest;
@@ -19,3 +20,5 @@ struct Graph {
 	unsigned int maxDegree;
 	struct AdjList* array;
 };
+
+struct Graph* graph_read(const char *filename);

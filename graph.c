@@ -1,7 +1,5 @@
-#include <stdint.h>
 #include <math.h>
 #include <string.h>
-
 #include "graph.h"
 
 // A utility function that creates a graph of V vertices
@@ -39,8 +37,8 @@ void addEdge(struct Graph* graph, int src, int dest) {
 	// Add an edge from src to dest.  A new node is added to the adjacency
 	// list of src.  The node is added at the begining
 	struct AdjListNode* newNode = newAdjListNode(dest);
-	if (graph->array[src].head==NULL) 
-		graph->array[src].head = 
+	if (graph->array[src].head == NULL) 
+		graph->array[src].head =
 			(struct AdjListNode *) malloc(sizeof(struct AdjListNode));
     else
 		graph->array[src].head = (struct AdjListNode *) realloc(
@@ -57,7 +55,7 @@ void addEdge(struct Graph* graph, int src, int dest) {
 	// Since graph is undirected, add an edge from dest to src also
 	newNode = newAdjListNode(src);
     
-	if (graph->array[dest].head==NULL)
+	if (graph->array[dest].head == NULL)
 		graph->array[dest].head = 
 			(struct AdjListNode *) malloc(sizeof(struct AdjListNode));
 	else
@@ -76,7 +74,7 @@ void addEdge(struct Graph* graph, int src, int dest) {
 }
 
 void find_avg_degree(struct Graph *graph) {
-	double sum=0;
+	double sum = 0;
 	unsigned int i, max = 0; 
 	int isolated = 0;
 
@@ -132,9 +130,4 @@ struct Graph* graph_read(const char *filename) {
 
 	find_avg_degree(graph);
 	return graph;
-}
-
-int main(int argc, char *argv[]) {
-	struct Graph* graph = graph_read(argv[1]);
-	return 0;
 }
