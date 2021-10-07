@@ -23,3 +23,5 @@ struct Graph {
 };
 
 struct Graph* graph_read(const char* filename);
+void printcolors(int* colors, unsigned int V);
+void printerrors(struct Graph* graph, int* colors);

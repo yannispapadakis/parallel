@@ -92,15 +92,6 @@ void jones_plassmann(struct Graph *graph, int *weights, int *colors) {
     }
   }
 
-  // check if a vertice has same color with a neighbor
-  for (i = 0; i < graph->V; i++) {
-    for (j = 0; j < graph->array[i].neighbors; j++) {
-      if (colors[graph->array[i].VertexID] ==
-          colors[graph->array[i].head[j].dest])
-        printf("Error between %d and %d\n", graph->array[i].VertexID,
-               graph->array[i].head[j].dest);
-    }
-  }
   free(j_colors);
 }
 
@@ -108,7 +99,10 @@ int *weights, *colors;  // random weights assigned at the beginning + colors
                         // assigned to each vertex
 
 int main(int argc, char *argv[]) {
-  if (argc < 2) printf("Usage: %s <path/to/graph>\n", argv[0]);
+  if (argc < 2) {
+    printf("Usage: %s <path/to/graph>\n", argv[0]);
+    return 0;
+  }
 
   struct Graph *graph = graph_read(argv[1]);
 

@@ -123,10 +123,6 @@ struct Graph *graph_read(const char *filename) {
     } else if (strcmp(token, "a") == 0 || strcmp(token, "e") == 0) {
       source = atoi(strtok(NULL, " "));
       dest = atoi(strtok(NULL, " "));
-      /*			token = strtok(NULL, " ");
-                              if (token != NULL)
-                                      weight = atof(token);
-      */
       edges++;
       addEdge(graph, source - 1, dest - 1);
     }
@@ -134,4 +130,22 @@ struct Graph *graph_read(const char *filename) {
 
   find_avg_degree(graph);
   return graph;
+}
+
+void printcolors(int *colors, unsigned int V) {
+  unsigned int i;
+  for (i = 0; i < V; i++) printf("Vertex: %d -> color: %d\n", i, colors[i]);
+}
+
+void printerrors(struct Graph *graph, int *colors) {
+  unsigned int i, j;
+  // check if a vertice has same color with a neighbor
+  for (i = 0; i < graph->V; i++) {
+    for (j = 0; j < graph->array[i].neighbors; j++) {
+      if (colors[graph->array[i].VertexID] ==
+          colors[graph->array[i].head[j].dest])
+        printf("Error between %d and %d\n", graph->array[i].VertexID,
+               graph->array[i].head[j].dest);
+    }
+  }
 }
