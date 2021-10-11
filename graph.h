@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 struct AdjListNode {
   int dest;
@@ -25,3 +26,5 @@ struct Graph {
 struct Graph* graph_read(const char* filename);
 void printcolors(int* colors, unsigned int V);
 void printerrors(struct Graph* graph, int* colors);
+void find_min_max(int *colors, unsigned int V);
+void first_available_color(struct Graph *graph, bool *is_available, int *colors, unsigned int i);

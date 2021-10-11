@@ -5,35 +5,24 @@
 #include "graph.h"
 
 void greedy_coloring(struct Graph *graph, int *colors) {
-  bool *is_unavailable = (bool *)malloc(graph->V * sizeof(bool));
+  bool *is_available = (bool *)malloc(graph->V * sizeof(bool));
 
-  unsigned int i, n;
+  unsigned int i;
 
-  for (i = 0; i < graph->V; i++) is_unavailable[i] = false;
+  for (i = 0; i < graph->V; i++) is_available[i] = true;
 
   // Assign the first color to the first vertex
-  colors[0] = 0;
+  colors[0] = 1;
 
   // Assign colors to remaining V-1 vertices
   for (i = 1; i < graph->V; i++) {
-    // set the colors of all adjacent vertices as unavailable
-    for (n = 0; n < graph->array[i].neighbors; n++)
-      if (colors[graph->array[i].head[n].dest] != -1)
-        is_unavailable[colors[graph->array[i].head[n].dest]] = true;
 
-    // find the first available color
-    for (n = 1; n < graph->V; n++) {
-      if (is_unavailable[n] == false) {
-        break;
-      }
-    }
-    colors[i] = n;
+	first_available_color(graph, is_available, colors, i);
 
-    // reset the color availability
-    for (n = 0; n < graph->array[i].neighbors; n++)
-      if (colors[graph->array[i].head[n].dest] != -1)
-        is_unavailable[colors[graph->array[i].head[n].dest]] = false;
   }
+  printf("Max Degree: %d\n", graph->maxDegree);
+  find_min_max(colors, graph->V);
+  printerrors(graph,colors);
 }
 
 int main(int argc, char *argv[]) {
@@ -47,7 +36,7 @@ int main(int argc, char *argv[]) {
   printf("\nVertices = %d, Edges = %d\n", graph->V, graph->edges);
 
   int *colors = (int *)malloc(graph->V * sizeof(int));
-  memset(colors, -1, graph->V * sizeof(int));
+  memset(colors, 0, graph->V * sizeof(int));
 
   greedy_coloring(graph, colors);
 

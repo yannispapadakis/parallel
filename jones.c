@@ -92,6 +92,9 @@ void jones_plassmann(struct Graph *graph, int *weights, int *colors) {
     }
   }
 
+  printf("Max Degree: %d\n", graph->maxDegree);
+  find_min_max(colors, graph->V);
+  printerrors(graph,colors);
   free(j_colors);
 }
 

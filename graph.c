@@ -149,3 +149,35 @@ void printerrors(struct Graph *graph, int *colors) {
     }
   }
 }
+
+void find_min_max(int *colors, unsigned int V) {
+	int min = V + 1, max = -1;
+	unsigned int i;
+	for (i = 0; i < V; i++) {
+		if (colors[i] < min)
+			min = colors[i];
+		if (colors[i] > max)
+			max = colors[i];
+	}
+	printf("Min: %d, Max: %d\n", min, max);
+}
+
+void first_available_color(struct Graph *graph, bool *is_available, int *colors, unsigned int i) {
+	unsigned int n;
+    // set the colors of all adjacent vertices as unavailable
+	for (n = 0; n < graph->array[i].neighbors; n++) 
+		if (colors[graph->array[i].head[n].dest] != 0)
+			is_available[colors[graph->array[i].head[n].dest]] = false;
+	
+    // find the first available color
+	for (n = 1; n < graph->V; n++)
+		if (is_available[n])
+			break;
+	
+	colors[i] = n;
+
+    // reset the color availability
+    for (n = 0; n < graph->array[i].neighbors; n++)
+      if (colors[graph->array[i].head[n].dest] != 0)
+        is_available[colors[graph->array[i].head[n].dest]] = true;
+}
