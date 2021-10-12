@@ -12,14 +12,14 @@ struct Graph *createGraph(int V) {
   graph->maxDegree = 0;
 
   // Create an array of adjacency lists.  Size of array will be V
-  graph->array = (struct AdjList *)malloc(V * sizeof(struct AdjList));
+  graph->vertex = (struct AdjList *)malloc(V * sizeof(struct AdjList));
   int64_t *color_arr = (int64_t *)malloc(V * sizeof(int64_t));
 
   // Initialize each adjacency list as empty by making head as NULL
   for (int i = 0; i < V; ++i) {
-    graph->array[i].head = NULL;
-    graph->array[i].neighbors = 0;
-    graph->array[i].VertexID = i;
+    graph->vertex[i].neighbor = NULL;
+    graph->vertex[i].degree = 0;
+    graph->vertex[i].VertexID = i;
 
     // Initialize color as unassigned
     color_arr[i] = -1;
@@ -41,38 +41,38 @@ void addEdge(struct Graph *graph, int src, int dest) {
   // Add an edge from src to dest.  A new node is added to the adjacency
   // list of src.  The node is added at the begining
   struct AdjListNode *newNode = newAdjListNode(dest);
-  if (graph->array[src].head == NULL)
-    graph->array[src].head =
+  if (graph->vertex[src].neighbor == NULL)
+    graph->vertex[src].neighbor =
         (struct AdjListNode *)malloc(sizeof(struct AdjListNode));
   else
-    graph->array[src].head = (struct AdjListNode *)realloc(
-        graph->array[src].head,
-        (graph->array[src].neighbors + 1) * sizeof(struct AdjListNode));
+    graph->vertex[src].neighbor = (struct AdjListNode *)realloc(
+        graph->vertex[src].neighbor,
+        (graph->vertex[src].degree + 1) * sizeof(struct AdjListNode));
 
-  graph->array[src].head[graph->array[src].neighbors] = *newNode;
-  graph->array[src].neighbors++;
+  graph->vertex[src].neighbor[graph->vertex[src].degree] = *newNode;
+  graph->vertex[src].degree++;
 
   // Store the maximimum vertex degree.
-  if (graph->maxDegree < graph->array[src].neighbors)
-    graph->maxDegree = graph->array[src].neighbors;
+  if (graph->maxDegree < graph->vertex[src].degree)
+    graph->maxDegree = graph->vertex[src].degree;
 
   // Since graph is undirected, add an edge from dest to src also
   newNode = newAdjListNode(src);
 
-  if (graph->array[dest].head == NULL)
-    graph->array[dest].head =
+  if (graph->vertex[dest].neighbor == NULL)
+    graph->vertex[dest].neighbor =
         (struct AdjListNode *)malloc(sizeof(struct AdjListNode));
   else
-    graph->array[dest].head = (struct AdjListNode *)realloc(
-        graph->array[dest].head,
-        (graph->array[dest].neighbors + 1) * sizeof(struct AdjListNode));
+    graph->vertex[dest].neighbor = (struct AdjListNode *)realloc(
+        graph->vertex[dest].neighbor,
+        (graph->vertex[dest].degree + 1) * sizeof(struct AdjListNode));
 
-  graph->array[dest].head[graph->array[dest].neighbors] = *newNode;
-  graph->array[dest].neighbors++;
+  graph->vertex[dest].neighbor[graph->vertex[dest].degree] = *newNode;
+  graph->vertex[dest].degree++;
 
   // Store the maximum vertex degree.
-  if (graph->maxDegree < graph->array[dest].neighbors)
-    graph->maxDegree = graph->array[dest].neighbors;
+  if (graph->maxDegree < graph->vertex[dest].degree)
+    graph->maxDegree = graph->vertex[dest].degree;
 
   graph->edges++;
 }
@@ -87,10 +87,10 @@ void find_avg_degree(struct Graph *graph) {
   double avg = (double)graph->edges / (double)graph->V;
 
   for (i = 0; i < graph->V; i++) {
-    sum += (double)graph->array[i].neighbors;
-    if (graph->array[i].neighbors > max) max = graph->array[i].neighbors;
-    if (graph->array[i].neighbors == 0) isolated++;
-    double help = (double)graph->array[i].neighbors;
+    sum += (double)graph->vertex[i].degree;
+    if (graph->vertex[i].degree > max) max = graph->vertex[i].degree;
+    if (graph->vertex[i].degree == 0) isolated++;
+    double help = (double)graph->vertex[i].degree;
     std = std + ((help - avg) * (help - avg));
   }
 
@@ -141,43 +141,41 @@ void printerrors(struct Graph *graph, int *colors) {
   unsigned int i, j;
   // check if a vertice has same color with a neighbor
   for (i = 0; i < graph->V; i++) {
-    for (j = 0; j < graph->array[i].neighbors; j++) {
-      if (colors[graph->array[i].VertexID] ==
-          colors[graph->array[i].head[j].dest])
-        printf("Error between %d and %d\n", graph->array[i].VertexID,
-               graph->array[i].head[j].dest);
+    for (j = 0; j < graph->vertex[i].degree; j++) {
+      if (colors[graph->vertex[i].VertexID] ==
+          colors[graph->vertex[i].neighbor[j].dest])
+        printf("Error between %d and %d\n", graph->vertex[i].VertexID,
+               graph->vertex[i].neighbor[j].dest);
     }
   }
 }
 
 void find_min_max(int *colors, unsigned int V) {
-	int min = V + 1, max = -1;
-	unsigned int i;
-	for (i = 0; i < V; i++) {
-		if (colors[i] < min)
-			min = colors[i];
-		if (colors[i] > max)
-			max = colors[i];
-	}
-	printf("Min: %d, Max: %d\n", min, max);
+  int min = V + 1, max = -1;
+  unsigned int i;
+  for (i = 0; i < V; i++) {
+    if (colors[i] < min) min = colors[i];
+    if (colors[i] > max) max = colors[i];
+  }
+  printf("Min: %d, Max: %d\n", min, max);
 }
 
-void first_available_color(struct Graph *graph, bool *is_available, int *colors, unsigned int i) {
-	unsigned int n;
-    // set the colors of all adjacent vertices as unavailable
-	for (n = 0; n < graph->array[i].neighbors; n++) 
-		if (colors[graph->array[i].head[n].dest] != 0)
-			is_available[colors[graph->array[i].head[n].dest]] = false;
-	
-    // find the first available color
-	for (n = 1; n < graph->V; n++)
-		if (is_available[n])
-			break;
-	
-	colors[i] = n;
+void first_available_color(struct Graph *graph, bool *is_available, int *colors,
+                           unsigned int i) {
+  unsigned int n;
+  // set the colors of all adjacent vertices as unavailable
+  for (n = 0; n < graph->vertex[i].degree; n++)
+    if (colors[graph->vertex[i].neighbor[n].dest] != 0)
+      is_available[colors[graph->vertex[i].neighbor[n].dest]] = false;
 
-    // reset the color availability
-    for (n = 0; n < graph->array[i].neighbors; n++)
-      if (colors[graph->array[i].head[n].dest] != 0)
-        is_available[colors[graph->array[i].head[n].dest]] = true;
+  // find the first available color
+  for (n = 1; n < graph->V; n++)
+    if (is_available[n]) break;
+
+  colors[i] = n;
+
+  // reset the color availability
+  for (n = 0; n < graph->vertex[i].degree; n++)
+    if (colors[graph->vertex[i].neighbor[n].dest] != 0)
+      is_available[colors[graph->vertex[i].neighbor[n].dest]] = true;
 }

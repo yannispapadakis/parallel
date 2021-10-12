@@ -36,22 +36,23 @@ void jones_plassmann(struct Graph *graph, int *weights, int *colors) {
 
       // initialize neighbor_colors
       neighbor_colors =
-          (int *)malloc(graph->V * sizeof(int));  // graph->array[j].neighbors
+          (int *)malloc(graph->V * sizeof(int));  // graph->vertex[j].degree
       memset(neighbor_colors, 0, graph->V * sizeof(int));
       num_colors = 0;
       // compare vertex weight to weights of its non-colored neighbors to see
       // if it is a maximum. Also gather the colors of all neighbors of the
       // vertex j that have been colored
-      for (k = 0; k < graph->array[j].neighbors; k++) {
+      for (k = 0; k < graph->vertex[j].degree; k++) {
         // if neighbor is colored just add its color to the neighbor_colors
-        if (colors[graph->array[j].head[k].dest] != 0) {
-          neighbor_colors[num_colors++] = colors[graph->array[j].head[k].dest];
+        if (colors[graph->vertex[j].neighbor[k].dest] != 0) {
+          neighbor_colors[num_colors++] =
+              colors[graph->vertex[j].neighbor[k].dest];
         }
         // if the weights match, solve conflict by looking at the vertices
         // ids and taking the vertex with higher id as the max
-        else if (j_weight < weights[graph->array[j].head[k].dest] ||
-                 (j_weight == weights[graph->array[j].head[k].dest] &&
-                  graph->array[j].head[k].dest > j)) {
+        else if (j_weight < weights[graph->vertex[j].neighbor[k].dest] ||
+                 (j_weight == weights[graph->vertex[j].neighbor[k].dest] &&
+                  graph->vertex[j].neighbor[k].dest > j)) {
           j_weight_is_max = false;
           break;
         }
@@ -94,7 +95,7 @@ void jones_plassmann(struct Graph *graph, int *weights, int *colors) {
 
   printf("Max Degree: %d\n", graph->maxDegree);
   find_min_max(colors, graph->V);
-  printerrors(graph,colors);
+  printerrors(graph, colors);
   free(j_colors);
 }
 
