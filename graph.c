@@ -1,8 +1,9 @@
+#include "graph.h"
+
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
-
-#include "graph.h"
+#include <sys/time.h>
 
 // A utility function that creates a graph of V vertices
 struct Graph *createGraph(int V) {
@@ -19,7 +20,7 @@ struct Graph *createGraph(int V) {
     graph->vertex[i].neighbor = NULL;
     graph->vertex[i].degree = 0;
     graph->vertex[i].VertexID = i;
-	graph->vertex[i].colored = false;
+    graph->vertex[i].colored = false;
   }
 
   return graph;
@@ -100,9 +101,16 @@ struct Graph *graph_read(const char *filename) {
   return graph;
 }
 
+double get_timestamp() {
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return tv.tv_usec + tv.tv_sec * 1e6;
+}
+
 void printcolors(int *colors, struct Graph *graph) {
   for (int i = 0; i < graph->V; i++)
-	printf("Vertex: %d is %s colored-> color: %d\n", i, (graph->vertex[i].colored ? "":"NOT"), colors[i]);
+    printf("Vertex: %d is %s colored-> color: %d\n", i,
+           (graph->vertex[i].colored ? "" : "NOT"), colors[i]);
 }
 
 void printerrors(struct Graph *graph, int *colors) {
@@ -123,9 +131,14 @@ void find_min_max(int *colors, int V) {
     if (colors[i] < min) min = colors[i];
     if (colors[i] > max) max = colors[i];
   }
-  printf("Min: %d, Max: %d\n", min, max);
+  //  printf("Min: %d, Max: %d\n", min, max);
+  printf("Colors used: %d\n", max);
 }
 
+void init_weights(struct Graph *graph) {
+  for (int i = 0; i < graph->V; i++)
+    graph->vertex[i].weight = rand() % (graph->V * 1000);
+}
 
 void first_available_color(struct Graph *graph, bool *is_available, int *colors,
                            int i) {
@@ -134,17 +147,16 @@ void first_available_color(struct Graph *graph, bool *is_available, int *colors,
   for (n = 0; n < graph->vertex[i].degree; n++) {
     if (colors[graph->vertex[i].neighbor[n].dest] != 0) {
       is_available[colors[graph->vertex[i].neighbor[n].dest]] = false;
-	}
+    }
   }
 
   // find the first available color
   for (n = 1; n < graph->V; n++) {
     if (is_available[n]) {
-		break;
-	}
+      break;
+    }
   }
 
-	if (n == 0) printf("COLOR IS 0 --- vertex: %d\n", i);
   colors[i] = n;
   graph->vertex[i].colored = true;
 
@@ -152,6 +164,6 @@ void first_available_color(struct Graph *graph, bool *is_available, int *colors,
   for (n = 0; n < graph->vertex[i].degree; n++) {
     if (colors[graph->vertex[i].neighbor[n].dest] != 0) {
       is_available[colors[graph->vertex[i].neighbor[n].dest]] = true;
-	}
+    }
   }
 }

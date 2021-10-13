@@ -1,29 +1,23 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -g -O3 -std=c99
+CFLAGS = -Wall -Wextra -g -O3 -std=c99 -D_POSIX_C_SOURCE=199309L
 LDFLAGS = -lm
 
-all: naive colorgraph ldf
+all: graphcolor_serial object_clean
 
-colorgraph: jones.o graph.o
-	$(CC) $(CFLAGS) -o colorgraph jones.o graph.o $(LDFLAGS)
+graphcolor_serial: serial_impl.o graph.o serial_coloring.o
+	$(CC) $(CFLAGS) -o graphcolor_serial serial_impl.o graph.o serial_coloring.o $(LDFLAGS)
 
-naive: naive.o graph.o
-	$(CC) $(CFLAGS) -o naivegraph naive.o graph.o $(LDFLAGS)
+serial_coloring.o: serial_coloring.c
+	$(CC) $(CFLAGS) -c -o serial_coloring.o serial_coloring.c
 
-ldf: ldf.o graph.o
-	$(CC) $(CFLAGS) -o ldfgraph ldf.o graph.o $(LDFLAGS)
-
-jones.o: jones.c
-	$(CC) $(CFLAGS) -c -o jones.o jones.c
-
-naive.o: naive.c
-	$(CC) $(CFLAGS) -c -o naive.o naive.c
-
-ldf.o: ldf.c
-	$(CC) $(CFLAGS) -c -o ldf.o ldf.c
+serial_impl.o: serial_impl.c
+	$(CC) $(CFLAGS) -c -o serial_impl.o serial_impl.c
 
 graph.o:
 	$(CC) $(CFLAGS) -c -o graph.o graph.c $(LDFLAGS)
 
+object_clean:
+	rm -f *.o
+
 clean:
-	rm -f *.o colorgraph naivegraph ldfgraph
+	rm -f *.o graphcolor_serial

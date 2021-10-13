@@ -26,7 +26,10 @@ struct Graph {
 };
 
 struct Graph* graph_read(const char* filename);
-void printcolors(int* colors, struct Graph *graph);
+double get_timestamp();
+void printcolors(int* colors, struct Graph* graph);
 void printerrors(struct Graph* graph, int* colors);
 void find_min_max(int* colors, int V);
-void first_available_color(struct Graph* graph, bool* is_available, int* colors, int i);
+void init_weights(struct Graph* graph);
+void first_available_color(struct Graph* graph, bool* is_available, int* colors,
+                           int i);

@@ -1,7 +1,8 @@
-#include <stdbool.h>
-#include <string.h>
+#include "serial_impl.h"
 
-#include "graph.h"
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 
 int compare(const void *a, const void *b) {
   int la = *(const int *)a;
@@ -9,13 +10,60 @@ int compare(const void *a, const void *b) {
   return (la > lb) - (la < lb);
 }
 
-void jones_plassmann(struct Graph *graph, int *weights, int *colors) {
+void greedy(struct Graph *graph, int *colors) {
+  bool *is_available = (bool *)malloc(graph->V * sizeof(bool));
+  int i;
+
+  for (i = 0; i < graph->V; i++) is_available[i] = true;
+
+  // Assign the first color to the first vertex
+  colors[0] = 1;
+
+  // Assign colors to remaining V-1 vertices
+  for (i = 1; i < graph->V; i++)
+    first_available_color(graph, is_available, colors, i);
+}
+
+void ldf(struct Graph *graph, int *colors) {
+  int colored_nodes = 0;
+  init_weights(graph);
+  int index;
+  int k, i, max;
+  bool *is_available = (bool *)malloc(graph->V * sizeof(bool));
+
+  for (k = 0; k < graph->V; k++) is_available[k] = true;
+
+  while (colored_nodes < graph->V) {
+    max = -1;
+    index = 0;
+
+    for (i = 0; i < graph->V; i++) {
+      if (colors[i] == 0) {
+        if (graph->vertex[i].degree > max) {
+          max = graph->vertex[i].degree;
+          index = i;
+        } else if (graph->vertex[i].degree == max &&
+                   graph->vertex[i].weight > graph->vertex[index].weight) {
+          index = i;
+        }
+      }
+    }
+
+    // color with lowest
+    first_available_color(graph, is_available, colors, index);
+    colored_nodes++;
+  }
+}
+
+void jones_plassmann(struct Graph *graph, int *colors) {
   int i, j, k;
   int *j_colors,
       *neighbor_colors;  // j_colors holds the colors of process,
                          // neighbor_colors the colors of one of these
   int j_weight, num_colors, min_color = 0;
   bool j_weight_is_max;
+
+  init_weights(graph);
 
   // Go through the vertices of this process and compare their weights with
   // neighboring vertices to find which of them are local maxima. Those form
@@ -30,13 +78,11 @@ void jones_plassmann(struct Graph *graph, int *weights, int *colors) {
   for (i = 0; i < graph->maxDegree; i++) {
     // for each vertex of this process
     for (j = 0; j < graph->V; j++) {
-      // get the vertex weight
-      j_weight = weights[j];
+      j_weight = graph->vertex[j].weight;
       j_weight_is_max = true;
 
       // initialize neighbor_colors
-      neighbor_colors =
-          (int *)malloc(graph->V * sizeof(int));  // graph->vertex[j].degree
+      neighbor_colors = (int *)malloc(graph->V * sizeof(int));
       memset(neighbor_colors, 0, graph->V * sizeof(int));
       num_colors = 0;
       // compare vertex weight to weights of its non-colored neighbors to see
@@ -44,15 +90,15 @@ void jones_plassmann(struct Graph *graph, int *weights, int *colors) {
       // vertex j that have been colored
       for (k = 0; k < graph->vertex[j].degree; k++) {
         // if neighbor is colored just add its color to the neighbor_colors
-        if (colors[graph->vertex[j].neighbor[k].dest] != 0) {
-          neighbor_colors[num_colors++] =
-              colors[graph->vertex[j].neighbor[k].dest];
+        int neighbor_id = graph->vertex[j].neighbor[k].dest;
+        if (colors[neighbor_id] != 0) {
+          neighbor_colors[num_colors++] = colors[neighbor_id];
         }
         // if the weights match, solve conflict by looking at the vertices
         // ids and taking the vertex with higher id as the max
-        else if (j_weight < weights[graph->vertex[j].neighbor[k].dest] ||
-                 (j_weight == weights[graph->vertex[j].neighbor[k].dest] &&
-                  graph->vertex[j].neighbor[k].dest > j)) {
+        else if (j_weight < graph->vertex[neighbor_id].weight ||
+                 (j_weight == graph->vertex[neighbor_id].weight &&
+                  neighbor_id > j)) {
           j_weight_is_max = false;
           break;
         }
@@ -84,7 +130,7 @@ void jones_plassmann(struct Graph *graph, int *weights, int *colors) {
           }
         }
         j_colors[j] = min_color;
-		graph->vertex[j].colored = true;
+        graph->vertex[j].colored = true;
       }
       free(neighbor_colors);
     }
@@ -94,38 +140,5 @@ void jones_plassmann(struct Graph *graph, int *weights, int *colors) {
     }
   }
 
-  printf("Max Degree: %d\n", graph->maxDegree);
-  find_min_max(colors, graph->V);
-  printerrors(graph, colors);
   free(j_colors);
-}
-
-int *weights, *colors;  // random weights assigned at the beginning + colors
-                        // assigned to each vertex
-
-int main(int argc, char *argv[]) {
-  if (argc < 2) {
-    printf("Usage: %s <path/to/graph>\n", argv[0]);
-    return 0;
-  }
-
-  struct Graph *graph = graph_read(argv[1]);
-
-  printf("\nVertices=%d Edges=%d\n", graph->V, graph->edges);
-
-  int i;
-
-  weights = (int *)malloc(graph->V * sizeof(int));
-  // Jones-Plassman needs to generate random weights which are a permutation of
-  // the vertices
-  for (i = 0; i < graph->V; i++) {
-    weights[i] = rand() % (graph->V * 1000);
-  }
-
-  colors = (int *)malloc(graph->V * sizeof(int));
-  memset(colors, 0, graph->V * sizeof(int));
-
-  jones_plassmann(graph, weights, colors);
-
-  return 0;
 }
