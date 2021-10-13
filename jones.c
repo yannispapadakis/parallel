@@ -10,7 +10,7 @@ int compare(const void *a, const void *b) {
 }
 
 void jones_plassmann(struct Graph *graph, int *weights, int *colors) {
-  unsigned int i, j, k;
+  int i, j, k;
   int *j_colors,
       *neighbor_colors;  // j_colors holds the colors of process,
                          // neighbor_colors the colors of one of these
@@ -84,6 +84,7 @@ void jones_plassmann(struct Graph *graph, int *weights, int *colors) {
           }
         }
         j_colors[j] = min_color;
+		graph->vertex[j].colored = true;
       }
       free(neighbor_colors);
     }
@@ -112,7 +113,7 @@ int main(int argc, char *argv[]) {
 
   printf("\nVertices=%d Edges=%d\n", graph->V, graph->edges);
 
-  unsigned int i;
+  int i;
 
   weights = (int *)malloc(graph->V * sizeof(int));
   // Jones-Plassman needs to generate random weights which are a permutation of

@@ -6,8 +6,7 @@
 
 void greedy_coloring(struct Graph *graph, int *colors) {
   bool *is_available = (bool *)malloc(graph->V * sizeof(bool));
-
-  unsigned int i;
+  int i;
 
   for (i = 0; i < graph->V; i++) is_available[i] = true;
 
@@ -15,11 +14,9 @@ void greedy_coloring(struct Graph *graph, int *colors) {
   colors[0] = 1;
 
   // Assign colors to remaining V-1 vertices
-  for (i = 1; i < graph->V; i++) {
-
+  for (i = 1; i < graph->V; i++) 
 	first_available_color(graph, is_available, colors, i);
 
-  }
   printf("Max Degree: %d\n", graph->maxDegree);
   find_min_max(colors, graph->V);
   printerrors(graph,colors);
